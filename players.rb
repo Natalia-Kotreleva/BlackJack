@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Players
+class Player
   attr_accessor :hand, :exp
 
   def initialize

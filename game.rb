@@ -8,8 +8,8 @@ class Game
   include Interface
 
   def initialize
-    @player = Players.new
-    @dealer = Players.new
+    @player = Player.new
+    @dealer = Player.new
     @bank = Bank.new
   end
 
