@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 class Players
-  attr_accessor :cards, :exp
+  attr_accessor :hand, :exp
 
   def initialize
+    @hand = Hand.new
     @exp = 100
   end
 
@@ -19,35 +20,11 @@ class Players
     @exp += bank
   end
 
-  def cards_create(card1, card2)
-    @cards = []
-    @cards << card1
-    @cards << card2
+  def add_card
+    @hand.add_card
   end
 
-  def add_card_player(card3)
-    @cards << card3
-  end
-
-  def cards_sum(deck_for_sum)
-    sum = 0
-    @cards.each do |card|
-      sum += deck_for_sum[card]
-    end
-    if sum > 21
-      @cards.each do |card|
-        sum -= 10 if deck_for_sum[card] == 11
-      end
-    end
-    sum
-  end
-
-  def dealer_move(card3, deck_for_sum)
-    if cards_sum(deck_for_sum) < 17
-      @cards << card3
-      puts 'Дилер взял карту'
-    else
-      puts 'Дилер не взял карту'
-  end
+  def dealer_move
+    @hand.add_card if @hand.cards_sum < 17
   end
 end

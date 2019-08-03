@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
+load 'interface.rb'
+
 class Game
   attr_accessor :bank
+
+  include Interface
 
   def initialize
     @player = Players.new
     @dealer = Players.new
     @bank = Bank.new
-    @deck_for_game = Deck.new
-    @deck_for_sum = Deck.new
   end
 
   def bet
@@ -26,49 +28,26 @@ class Game
   end
 
   def begin_game
-    @deck_for_game.redeck
-    @player.cards_create(@deck_for_game.rand_card, @deck_for_game.rand_card)
-    @dealer.cards_create(@deck_for_game.rand_card, @deck_for_game.rand_card)
+    @player.hand.clear_hand
+    @dealer.hand.clear_hand
+    @player.add_card
+    @player.add_card
+    @dealer.add_card
+    @dealer.add_card
     bet
-    puts @player.cards
   end
 
   def keep_game
     if @dealer.exp.zero? || @player.exp.zero?
-      puts "Конец игры! Банк дилера: #{@dealer.exp}, банк игрока: #{@player.exp}."
+      show_cards_sum(@player)
+      show_cards_sum(@dealer)
+      score_message(@player)
+      score_message(@dealer)
       @match = 0
     else
-      puts 'Продолжить игру? (y/n)'
-      choice = gets.chomp
-      case choice
-      when 'y'
-        puts 'Ok!'
+      case continue
       when 'n'
-        puts 'До встречи!'
         @match = 0
-      end
-  end
-  end
-
-  def choice
-    puts 'Пропустить(1), добавить карту(2), открыть карты(3)?'
-    choice = gets.to_i
-
-    while choice != 4
-      case choice
-      when 0
-        puts 'Добавить карту(2), открыть карты(3)?'
-        choice = gets.to_i
-      when 1
-        @dealer.dealer_move(@deck_for_game.rand_card, @deck_for_sum.deck)
-        choice = 0
-      when 2
-        @player.add_card_player(@deck_for_game.rand_card)
-        puts @player.cards
-        @dealer.dealer_move(@deck_for_game.rand_card, @deck_for_sum.deck)
-        choice = 4
-      when 3
-        choice = 4
       end
     end
   end
@@ -77,32 +56,31 @@ class Game
     @match ||= 1
     while @match != 0
       begin_game
-      choice
-      results
+      show_cards(@player)
+      menu(@player, @dealer)
+      result_message(results)
+      show_results(@player, @dealer)
       keep_game
     end
   end
 
   def results
-    result = "Счет игрока: #{@player.cards_sum(@deck_for_sum.deck)}, счет дилера: #{@dealer.cards_sum(@deck_for_sum.deck)}"
-    pl_score = @player.cards_sum(@deck_for_sum.deck)
-    d_score = @dealer.cards_sum(@deck_for_sum.deck)
+    pl_score = @player.hand.cards_sum
+    d_score = @dealer.hand.cards_sum
 
-    if pl_score > 21 && d_score > 21
-      puts "Игра окончена! #{result}"
-    elsif pl_score <= 21 && (pl_score > d_score || d_score > 21)
-      puts "Вы выиграли! #{result}"
+    if pl_score <= 21 && (d_score < pl_score || d_score > 21)
       @player.win(@bank.bank)
       @bank.bank = 0
+      return 1 # player win
+    elsif pl_score > 21 && d_score > 21
+      return 2 # player dealer lose
     elsif d_score <= 21 && (pl_score > 21 || pl_score < d_score)
-      puts "Вы проиграли! #{result}"
       @dealer.win(@bank.bank)
       @bank.bank = 0
+      return 3 # dealer win
     elsif pl_score == d_score && pl_score <= 21
-      puts "Ничья! #{result}"
       return_to_players
-
+      return 4 # player dealer win
     end
-    puts "Банк игрока: #{@player.exp}, банк дилера: #{@dealer.exp}, банк: #{@bank.bank}"
   end
 end
