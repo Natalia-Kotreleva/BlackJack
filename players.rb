@@ -20,11 +20,15 @@ class Player
     @exp += bank
   end
 
-  def add_card
-    @hand.add_card
+  def add_card(card)
+    @hand.add_card(card)
   end
 
-  def dealer_move
-    @hand.add_card if @hand.cards_sum < 17
+  def clear_hand
+    @hand.clear_hand
+  end
+
+  def dealer_move(card)
+    @hand.add_card(card) if @hand.cards_sum < 17
   end
 end

@@ -1,66 +1,68 @@
 # frozen_string_literal: true
 
-load 'interface.rb'
-
 class Game
-  attr_accessor :bank
-
-  include Interface
-
   def initialize
     @player = Player.new
     @dealer = Player.new
     @bank = Bank.new
-  end
-
-  def bet
-    @player.get_exp
-    @dealer.get_exp
-    @bank.put_exp
-    @bank.put_exp
-  end
-
-  def return_to_players
-    @player.put_exp
-    @dealer.put_exp
-    @bank.get_exp
-    @bank.get_exp
-  end
-
-  def begin_game
-    @player.hand.clear_hand
-    @dealer.hand.clear_hand
-    @player.add_card
-    @player.add_card
-    @dealer.add_card
-    @dealer.add_card
-    bet
-  end
-
-  def keep_game
-    if @dealer.exp.zero? || @player.exp.zero?
-      show_cards_sum(@player)
-      show_cards_sum(@dealer)
-      score_message(@player)
-      score_message(@dealer)
-      @match = 0
-    else
-      case continue
-      when 'n'
-        @match = 0
-      end
-    end
+    @deck = Deck.new
+    @interface = Interface.new
   end
 
   def game_proccess
     @match ||= 1
     while @match != 0
       begin_game
-      show_cards(@player)
-      menu(@player, @dealer)
-      result_message(results)
-      show_results(@player, @dealer)
+      @interface.show_cards(@player)
+      @interface.menu(@player, @dealer, @deck.card)
+      @interface.result_message(results)
+      @interface.show_results(@player, @dealer)
       keep_game
+    end
+  end
+
+  private
+
+  def for_users(method)
+    [@player, @dealer].each { |user| user.send(method) }
+  end
+
+  def users_add_card
+    [@player, @dealer].each { |user| user.add_card(@deck.card) }
+  end
+
+  def bet
+    for_users('get_exp')
+    @bank.put_exp
+    @bank.put_exp
+  end
+
+  def return_to_players
+    for_users('put_exp')
+    @bank.get_exp
+    @bank.get_exp
+  end
+
+  def begin_game
+    for_users('clear_hand')
+    @deck.shuffle
+    users_add_card
+    users_add_card
+    bet
+  end
+
+  def keep_game
+    if @dealer.exp.zero? || @player.exp.zero?
+      @interface.show_cards_sum(@player)
+      @interface.show_cards_sum(@dealer)
+      @interface.score_message(@player)
+      @interface.score_message(@dealer)
+      @match = 0
+    else
+      case @interface.continue
+      when 'n'
+        @match = 0
+      end
     end
   end
 

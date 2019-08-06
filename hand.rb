@@ -7,8 +7,8 @@ class Hand
     @cards = []
   end
 
-  def add_card
-    @cards << Card.new
+  def add_card(card)
+    @cards << card
   end
 
   def clear_hand

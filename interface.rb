@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module Interface
-  def menu(player, dealer)
+class Interface
+  def menu(player, dealer, card)
     puts 'Пропустить ход (1), добавить карту(2), открыть карты(3)?'
     choice = gets.to_i
     while choice != 4
@@ -10,12 +10,12 @@ module Interface
         puts 'Добавить карту(2), открыть карты(3)?'
         choice = gets.to_i
       when 1
-        dealer.dealer_move
+        dealer.dealer_move(card)
         choice = 0
       when 2
-        player.add_card
+        player.add_card(card)
         show_cards(player)
-        dealer.dealer_move
+        dealer.dealer_move(card)
         choice = 4
       when 3
         choice = 4
